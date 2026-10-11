@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OBSTETRA QUEST - Misión Materna</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,#f7eef5,#eef5fb);color:#292533}
+button{font:inherit}
+#app{max-width:900px;margin:auto;min-height:100vh;padding:20px}
+.screen{background:#fff;border-radius:24px;box-shadow:0 12px 35px rgba(60,40,70,.15);padding:28px}
+.hidden{display:none!important}
+h1{margin:5px 0 8px;font-size:38px}
+h2{margin-top:4px}
+.subtitle{color:#716878}
+.badges{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.badge{padding:9px 13px;border-radius:999px;background:#f2e9f2;font-weight:bold;font-size:14px}
+.primary{border:0;border-radius:14px;padding:14px 22px;background:#7d3f70;color:#fff;font-weight:bold;cursor:pointer}
+.primary:hover{filter:brightness(1.08)}
+.secondary{border:1px solid #d7cbd7;background:#fff;border-radius:12px;padding:11px 16px;cursor:pointer}
+.start-card{text-align:center;padding:25px}
+.emoji{font-size:70px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.stat{background:#fff;border-radius:15px;padding:12px;text-align:center;border:1px solid #eadfea}
+.stat b{display:block;font-size:21px;margin-top:3px}
+.progress{height:10px;background:#eadfea;border-radius:99px;overflow:hidden;margin:10px 0 18px}
+.progress span{display:block;height:100%;background:#7d3f70;width:0}
+.case{background:#fff;border-radius:22px;padding:24px;border:1px solid #eadfea}
+.patient{display:flex;align-items:center;gap:16px;background:#faf5fa;border-radius:17px;padding:15px}
+.avatar{font-size:54px}
+.data{display:flex;gap:8px;flex-wrap:wrap;margin:15px 0}
+.chip{background:#f0f5fa;padding:8px 11px;border-radius:10px;font-size:14px}
+.choice{width:100%;padding:15px;margin:7px 0;text-align:left;border:2px solid #e6dce6;background:#fff;border-radius:13px;cursor:pointer}
+.choice:hover{border-color:#7d3f70;background:#fcf7fc}
+.choice:disabled{cursor:default}
+.correct{border-color:#2d8b57!important;background:#eefaf3!important}
+.wrong{border-color:#c94a55!important;background:#fff0f1!important}
+.timerbar{height:10px;background:#eee;border-radius:99px;overflow:hidden;margin:8px 0 15px}
+.timerbar span{display:block;height:100%;background:#7d3f70;width:100%}
+.feedback{margin-top:15px;padding:15px;border-radius:14px;background:#f5eef7}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}
+.inventory{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.item{border:1px dashed #c8b7c8;border-radius:10px;padding:8px 10px;background:#fff}
+.meter{margin:15px 0}
+.meterline{height:14px;background:#eee;border-radius:99px;overflow:hidden}
+.meterline span{display:block;height:100%;background:#7d3f70;width:70%}
+.lock{opacity:.55}
+.final{text-align:center}
+.scorebig{font-size:55px;font-weight:bold;color:#7d3f70}
+@media(max-width:650px){.stats{grid-template-columns:repeat(2,1fr)}h1{font-size:30px}.screen{padding:18px}}
+</style>
+</head>
+<body>
+<div id="app">
+<section id="home" class="screen start-card">
+<div class="emoji">🩺👩‍⚕️</div>
+<h1>OBSTETRA QUEST</h1>
+<h2>Misión Materna</h2>
+<p class="subtitle">Un juego de decisiones obstétricas. No basta con saber la respuesta: debes administrar tiempo, vidas y recursos.</p>
+<div class="badges">
+<span class="badge">🎯 Decisiones</span><span class="badge">⏱️ Tiempo</span><span class="badge">❤️ Vidas</span><span class="badge">🎒 Recursos</span><span class="badge">🏆 Rangos</span>
+</div>
+<p><b>Objetivo:</b> superar 6 misiones y llegar al caso final con la mayor cantidad de puntos posible.</p>
+<button class="primary" id="start">COMENZAR MISIÓN 🚀</button>
+</section>
+
+<section id="game" class="hidden">
+<div class="stats">
+<div class="stat">❤️ Vidas<b id="lives">3</b></div>
+<div class="stat">⭐ Puntos<b id="score">0</b></div>
+<div class="stat">🎒 Recursos<b id="resources">3</b></div>
+<div class="stat">🏥 Nivel<b id="level">1/6</b></div>
+</div>
+<div class="progress"><span id="progress"></span></div>
+<div class="case">
+<div class="patient"><div class="avatar">👩</div><div><b id="caseTitle">Misión</b><div id="caseIntro"></div></div></div>
+<div class="data" id="data"></div>
+<div class="meter"><b>Estado materno-fetal</b><div class="meterline"><span id="health"></span></div></div>
+<div id="timerText">⏱️ Tiempo: 20 s</div>
+<div class="timerbar"><span id="timer"></span></div>
+<h3 id="question"></h3>
+<div id="choices"></div>
+<div id="feedback" class="feedback hidden"></div>
+<div class="actions">
+<button id="hint" class="secondary">💡 Usar pista (-5 pts)</button>
+<button id="next" class="primary hidden">Continuar →</button>
+</div>
+<div class="inventory"><span class="item">🩺 Estetoscopio</span><span class="item">📋 Historia clínica</span><span class="item">💊 Kit de emergencia</span></div>
+</div>
+</section>
+
+<section id="end" class="screen final hidden">
+<div class="emoji">🏆</div>
+<h1 id="rank">Misión completada</h1>
+<div class="scorebig" id="finalScore">0</div>
+<p id="finalText"></p>
+<div class="badges" style="justify-content:center">
+<span class="badge">🩺 Toma de decisiones</span><span class="badge">📚 Educación obstétrica</span><span class="badge">🎮 Juego educativo</span>
+</div>
+<button class="primary" onclick="location.reload()">JUGAR OTRA VEZ 🔄</button>
+</section>
+</div>
+
+<script>
+const missions=[
+{title:"Misión 1 · La alerta silenciosa",intro:"Una gestante llega a emergencia. Debes identificar qué situación requiere atención prioritaria.",data:["34 semanas","PA 160/110 mmHg","Cefalea intensa","Visión borrosa"],q:"¿Cuál es tu primera decisión?",opts:["Enviar a casa con reposo","Evaluar inmediatamente signos de gravedad y activar manejo de urgencia","Esperar a que aparezcan contracciones","Indicar solo hierro"],ans:1,good:"Correcto. Los datos descritos son señales de alarma que requieren evaluación inmediata.",bad:"No es seguro minimizar estos signos. La prioridad es valorar gravedad y actuar oportunamente.",points:15,damage:0},
+{title:"Misión 2 · El reloj del parto",intro:"La paciente está a término y presenta contracciones regulares. Ahora debes interpretar la situación.",data:["39 semanas","Contracciones regulares","Dolor creciente","Feto único"],q:"¿Qué combinación de valoración es más útil para seguir la evolución?",opts:["Solo el peso materno","Dinámica uterina, cambios cervicales y bienestar materno-fetal","Solo la temperatura","Solo preguntar si tiene hambre"],ans:1,good:"Bien. Para valorar la evolución del trabajo de parto se integran datos maternos, dinámica uterina, progresión cervical y estado fetal.",bad:"La evolución del parto necesita una valoración más completa que un solo dato.",points:15,damage:0},
+{title:"Misión 3 · Código rojo",intro:"Tras el parto aparece sangrado abundante. Tienes poco tiempo para decidir.",data:["Puérpera inmediata","Sangrado abundante","Útero hipotónico","Taquicardia"],q:"¿Qué problema debes sospechar primero?",opts:["Hemorragia posparto asociada a atonía uterina","Embarazo ectópico","Hiperémesis gravídica","Parto pretérmino"],ans:0,good:"Correcto. La atonía uterina es una causa importante de hemorragia posparto y requiere respuesta rápida.",bad:"El cuadro es compatible con una emergencia hemorrágica posparto; debes pensar en sus causas principales.",points:20,damage:20},
+{title:"Misión 4 · Señal del bebé",intro:"Una gestante comunica un cambio importante respecto a los movimientos habituales del bebé.",data:["37 semanas","Movimientos fetales mucho menores","Sin mejoría","Madre preocupada"],q:"¿Cuál es la mejor decisión?",opts:["Decirle que siempre es normal al final","Valorar oportunamente el bienestar fetal","Esperar una semana","Indicar ejercicio intenso"],ans:1,good:"Correcto. Una disminución marcada de movimientos requiere valoración oportuna del bienestar fetal.",bad:"Un cambio marcado en los movimientos habituales no debe ignorarse.",points:20,damage:10},
+{title:"Misión 5 · La decisión difícil",intro:"Llegas a una paciente con sangrado vaginal en la segunda mitad del embarazo. Debes escoger la acción más segura.",data:["30 semanas","Sangrado vaginal","Causa aún desconocida","Feto por valorar"],q:"¿Qué haces antes de realizar procedimientos que podrían ser riesgosos?",opts:["Evaluar madre y feto y determinar la causa","Realizar tacto vaginal inmediatamente sin valoración","Mandarla a casa","Indicar únicamente vitaminas"],ans:0,good:"Correcto. Primero se realiza una evaluación materno-fetal y se orienta la causa del sangrado.",bad:"Ante sangrado en la segunda mitad del embarazo, la evaluación inicial es fundamental antes de procedimientos que puedan estar contraindicados.",points:20,damage:15},
+{title:"Misión FINAL · La primera toma",intro:"Última misión. Una madre tiene dolor durante la lactancia y el bebé parece no agarrarse bien.",data:["Puerperio","Dolor al amamantar","Agarre inadecuado","Madre desea continuar"],q:"¿Qué intervención es más apropiada?",opts:["Suspender definitivamente la lactancia","Observar una toma y corregir posición y agarre","Dar agua al recién nacido","Reducir todas las tomas"],ans:1,good:"¡Misión final superada! Observar y corregir la técnica permite brindar apoyo práctico a la lactancia.",bad:"La dificultad puede abordarse evaluando la técnica y ofreciendo apoyo práctico.",points:25,damage:0}
+];
+
+let idx=0,score=0,lives=3,resources=3,health=100,time=20,timerId=null,answered=false;
+const $=id=>document.getElementById(id);
+function start(){ $("home").classList.add("hidden"); $("game").classList.remove("hidden"); render(); }
+$("start").onclick=start;
+
+function render(){
+ answered=false; clearInterval(timerId); time=20;
+ const m=missions[idx];
+ $("caseTitle").textContent=m.title; $("caseIntro").textContent=m.intro;
+ $("data").innerHTML=m.data.map(x=>`<span class="chip">${x}</span>`).join("");
+ $("question").textContent=m.q; $("level").textContent=`${idx+1}/${missions.length}`;
+ $("score").textContent=score; $("lives").textContent=lives; $("resources").textContent=resources;
+ $("progress").style.width=((idx)/missions.length*100)+"%";
+ $("health").style.width=Math.max(0,health)+"%";
+ $("feedback").classList.add("hidden"); $("next").classList.add("hidden");
+ $("hint").disabled=false;
+ $("choices").innerHTML="";
+ m.opts.forEach((o,n)=>{
+   const b=document.createElement("button"); b.className="choice"; b.textContent=String.fromCharCode(65+n)+") "+o;
+   b.onclick=()=>answer(n); $("choices").appendChild(b);
+ });
+ updateTimer();
+ timerId=setInterval(()=>{time--;updateTimer();if(time<=0){clearInterval(timerId);timeUp()}},1000);
+}
+function updateTimer(){
+ $("timerText").textContent=`⏱️ Tiempo: ${time} s`;
+ $("timer").style.width=(time/20*100)+"%";
+}
+function answer(n){
+ if(answered)return; answered=true; clearInterval(timerId);
+ const m=missions[idx], buttons=[...$("choices").children];
+ buttons.forEach(b=>b.disabled=true);
+ if(n===m.ans){score+=m.points;buttons[n].classList.add("correct");$("feedback").innerHTML="<b>✅ ¡Decisión correcta!</b><br>"+m.good}
+ else{lives--;health-=m.damage||15;buttons[n].classList.add("wrong");buttons[m.ans].classList.add("correct");$("feedback").innerHTML="<b>❌ Decisión incorrecta.</b><br>"+m.bad}
+ $("score").textContent=score;$("lives").textContent=lives;$("health").style.width=Math.max(0,health)+"%";
+ $("feedback").classList.remove("hidden");$("next").classList.remove("hidden");$("hint").disabled=true;
+ if(lives<=0){setTimeout(endGame,700)}
+}
+function timeUp(){
+ if(answered)return; answered=true;
+ const m=missions[idx],buttons=[...$("choices").children];
+ buttons.forEach(b=>b.disabled=true);
+ lives--; health-=20; buttons[m.ans].classList.add("correct");
+ $("feedback").innerHTML="<b>⏰ ¡Se acabó el tiempo!</b><br>La decisión correcta era: "+m.opts[m.ans];
+ $("feedback").classList.remove("hidden");$("next").classList.remove("hidden");
+ $("lives").textContent=lives;$("health").style.width=Math.max(0,health)+"%";
+ if(lives<=0)setTimeout(endGame,700);
+}
+$("hint").onclick=()=>{
+ if(answered||resources<=0)return;
+ resources--;score=Math.max(0,score-5);$("resources").textContent=resources;$("score").textContent=score;
+ const m=missions[idx];const wrong=[...Array(m.opts.length).keys()].filter(x=>x!==m.ans);
+ const remove=wrong[Math.floor(Math.random()*wrong.length)];
+ const b=$("choices").children[remove];b.disabled=true;b.classList.add("lock");b.textContent+="  🔒";
+ $("hint").disabled=true;
+};
+$("next").onclick=()=>{if(lives<=0||health<=0){endGame();return} if(idx<missions.length-1){idx++;render()}else endGame()};
+function endGame(){
+ clearInterval(timerId);$("game").classList.add("hidden");$("end").classList.remove("hidden");
+ $("finalScore").textContent=score+" puntos";
+ let rank,text;
+ if(score>=100&&lives>=2){rank="🏆 OBSTETRA ÉLITE";text="Excelente manejo de decisiones. Has completado todas las misiones con un desempeño destacado."}
+ else if(score>=70){rank="🥇 OBSTETRA EN FORMACIÓN";text="Buen desempeño. Tienes una base sólida y sabes tomar decisiones en situaciones obstétricas."}
+ else{rank="🩺 RESIDENTE EN ENTRENAMIENTO";text="Misión completada. Cada error te sirve para seguir entrenando tus decisiones."}
+ $("rank").textContent=rank;$("finalText").textContent=text;
+ $("progress").style.width="100%";
+}
+</script>
+</body>
+</html>
